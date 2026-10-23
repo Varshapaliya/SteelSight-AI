@@ -3,4 +3,3 @@ pandas
 pillow
 ultralytics
 opencv-python-headless
-libgl1
