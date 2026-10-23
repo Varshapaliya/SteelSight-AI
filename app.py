@@ -2,6 +2,8 @@
 import streamlit as st
 import pandas as pd
 from PIL import Image
+import os
+os.environ["OPENCV_OPENCL_RUNTIME"] = "disabled"
 from ultralytics import YOLO
 from pathlib import Path
 
