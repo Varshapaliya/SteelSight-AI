@@ -143,79 +143,8 @@ with st.sidebar:
     st.caption("Prototype status: image-level inspection")
     st.caption("Not connected to a production line or coil database.")
 
-# -------------------- Model performance --------------------
-st.markdown('<div class="section-label">01 / MODEL EVALUATION</div>', unsafe_allow_html=True)
-st.subheader("Validation Performance")
-
-metrics = read_metrics()
-if metrics:
-    cols = st.columns(4, gap="medium")
-    values = [
-        ("Precision", f"{metrics['precision'] * 100:.2f}%", "Positive prediction quality"),
-        ("Recall", f"{metrics['recall'] * 100:.2f}%", "Ground-truth defects recovered"),
-        ("mAP @ 50", f"{metrics['map50'] * 100:.2f}%", "Mean AP at IoU 0.50"),
-        ("mAP @ 50–95", f"{metrics['map50_95'] * 100:.2f}%", "AP averaged over IoU thresholds"),
-    ]
-    for col, item in zip(cols, values):
-        with col:
-            make_kpi(*item)
-
-    st.caption(
-        f"Dataset: {metrics.get('dataset', 'NEU-DET')}  ·  "
-        f"Split: {metrics.get('split', 'validation')}  ·  "
-        f"Images: {metrics.get('images', 'N/A')}  ·  "
-        f"Instances: {metrics.get('instances', 'N/A')}"
-    )
-    st.info(
-        "These values were transcribed from the saved evaluation notebook; "
-        "they have not been freshly reproduced on this machine. They describe "
-        "dataset-level performance, not live plant quality or an individual image."
-    )
-else:
-    st.warning("Validation metrics are unavailable or incomplete. Check evaluation_results/validation_metrics.json.")
-
-st.divider()
-
-# -------------------- Class performance --------------------
-st.markdown('<div class="section-label">02 / DEFECT INTELLIGENCE</div>', unsafe_allow_html=True)
-st.subheader("Performance Across the Six NEU-DET Classes")
-st.caption("The presentation emphasizes precision, recall and class-wise evaluation rather than a single accuracy score.")
-
-class_df = pd.DataFrame({
-    "Defect": ["Crazing", "Inclusion", "Patches", "Pitted surface", "Rolled-in scale", "Scratches"],
-    "Precision (%)": [59.8, 75.3, 82.5, 87.8, 64.7, 77.0],
-    "Recall (%)": [34.4, 86.8, 95.8, 81.2, 65.5, 96.2],
-    "mAP@50 (%)": [47.8, 90.1, 97.1, 87.9, 69.8, 97.2],
-})
-
-left, right = st.columns([1.15, 1], gap="large")
-with left:
-    st.markdown("#### Precision vs Recall")
-    pr = class_df.set_index("Defect")[["Precision (%)", "Recall (%)"]]
-    st.bar_chart(pr, x_label="Defect class", y_label="Score (%)", height=330)
-    st.caption("Fixed percentage scale: 0–100. Crazing recall is a key improvement area in the recorded results.")
-
-with right:
-    st.markdown("#### mAP@50 by class")
-    ap = class_df.set_index("Defect")[["mAP@50 (%)"]]
-    st.bar_chart(ap, x_label="Defect class", y_label="mAP@50 (%)", height=330)
-    st.caption("Patches and scratches have the strongest recorded AP; crazing is the weakest.")
-
-with st.expander("Open the full class-wise metrics table"):
-    st.dataframe(
-        class_df.style.format({
-            "Precision (%)": "{:.1f}",
-            "Recall (%)": "{:.1f}",
-            "mAP@50 (%)": "{:.1f}",
-        }),
-        use_container_width=True,
-        hide_index=True,
-    )
-
-st.divider()
-
 # -------------------- Inspection workflow --------------------
-st.markdown('<div class="section-label">03 / IMAGE INSPECTION</div>', unsafe_allow_html=True)
+st.markdown('<div class="section-label">01 / IMAGE INSPECTION</div>', unsafe_allow_html=True)
 st.subheader("Detect → Classify → Review")
 st.caption("Upload an image to inspect model predictions. Low-confidence detections are filtered by the selected threshold; production-grade unknown-defect detection is not implemented in this prototype.")
 
@@ -274,7 +203,7 @@ if uploaded_file:
                     st.image(image, use_container_width=True)
                 with output_col:
                     st.markdown("#### Annotated prediction")
-                    annotated = result.plot()
+                    annotated = result.plot(font_size=8, line_width=1)
                     st.image(annotated[:, :, ::-1], use_container_width=True)
 
                 st.markdown("#### Inspection summary")
@@ -334,9 +263,85 @@ else:
     </div>
     """, unsafe_allow_html=True)
 
+
+
+
+# -------------------- Model performance --------------------
+st.markdown('<div class="section-label">02 / MODEL EVALUATION</div>', unsafe_allow_html=True)
+st.subheader("Validation Performance")
+
+metrics = read_metrics()
+if metrics:
+    cols = st.columns(4, gap="medium")
+    values = [
+        ("Precision", f"{metrics['precision'] * 100:.2f}%", "Positive prediction quality"),
+        ("Recall", f"{metrics['recall'] * 100:.2f}%", "Ground-truth defects recovered"),
+        ("mAP @ 50", f"{metrics['map50'] * 100:.2f}%", "Mean AP at IoU 0.50"),
+        ("mAP @ 50–95", f"{metrics['map50_95'] * 100:.2f}%", "AP averaged over IoU thresholds"),
+    ]
+    for col, item in zip(cols, values):
+        with col:
+            make_kpi(*item)
+
+    st.caption(
+        f"Dataset: {metrics.get('dataset', 'NEU-DET')}  ·  "
+        f"Split: {metrics.get('split', 'validation')}  ·  "
+        f"Images: {metrics.get('images', 'N/A')}  ·  "
+        f"Instances: {metrics.get('instances', 'N/A')}"
+    )
+    st.info(
+        "These values were transcribed from the saved evaluation notebook; "
+        "they have not been freshly reproduced on this machine. They describe "
+        "dataset-level performance, not live plant quality or an individual image."
+    )
+else:
+    st.warning("Validation metrics are unavailable or incomplete. Check evaluation_results/validation_metrics.json.")
+
+st.divider()
+
+# -------------------- Class performance --------------------
+st.markdown('<div class="section-label">03 / DEFECT INTELLIGENCE</div>', unsafe_allow_html=True)
+st.subheader("Performance Across the Six NEU-DET Classes")
+st.caption("The presentation emphasizes precision, recall and class-wise evaluation rather than a single accuracy score.")
+
+class_df = pd.DataFrame({
+    "Defect": ["Crazing", "Inclusion", "Patches", "Pitted surface", "Rolled-in scale", "Scratches"],
+    "Precision (%)": [59.8, 75.3, 82.5, 87.8, 64.7, 77.0],
+    "Recall (%)": [34.4, 86.8, 95.8, 81.2, 65.5, 96.2],
+    "mAP@50 (%)": [47.8, 90.1, 97.1, 87.9, 69.8, 97.2],
+})
+
+left, right = st.columns([1.15, 1], gap="large")
+with left:
+    st.markdown("#### Precision vs Recall")
+    pr = class_df.set_index("Defect")[["Precision (%)", "Recall (%)"]]
+    st.bar_chart(pr, x_label="Defect class", y_label="Score (%)", height=330)
+    st.caption("Fixed percentage scale: 0–100. Crazing recall is a key improvement area in the recorded results.")
+
+with right:
+    st.markdown("#### mAP@50 by class")
+    ap = class_df.set_index("Defect")[["mAP@50 (%)"]]
+    st.bar_chart(ap, x_label="Defect class", y_label="mAP@50 (%)", height=330)
+    st.caption("Patches and scratches have the strongest recorded AP; crazing is the weakest.")
+
+with st.expander("Open the full class-wise metrics table"):
+    st.dataframe(
+        class_df.style.format({
+            "Precision (%)": "{:.1f}",
+            "Recall (%)": "{:.1f}",
+            "mAP@50 (%)": "{:.1f}",
+        }),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+st.divider()
+
+
+# -------------------- Footer --------------------
 st.divider()
 st.markdown(
-    '<p style="color:#91a6bc;font-size:.82rem">SteelSight AI · Stainless Spark 2026 Round 2 · Research prototype. '
+    '<p style="color:#91a6bc;font-size:.82rem">SteelSight AI · Research prototype. '
     'No live line feed, coil-level database, anomaly-screening model or certified QA decision is connected in this version.</p>',
     unsafe_allow_html=True,
 )
