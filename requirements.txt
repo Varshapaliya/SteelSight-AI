@@ -5,3 +5,4 @@ pillow
 ultralytics
 opencv-python-headless
 
+matplotlib

@@ -1,0 +1,10 @@
+{
+  "precision": 0.7451,
+  "recall": 0.7664,
+  "map50": 0.8165,
+  "map50_95": 0.5085,
+  "dataset": "NEU-DET",
+  "split": "validation",
+  "images": 426,
+  "instances": 1006
+}
